@@ -69,20 +69,22 @@ namespace Inventory.Droid
 
         public void SetConfig(IScannerConfig a_config)
         {
-
-            ZebraScannerConfig config = (ZebraScannerConfig)a_config;
-
             Bundle profileConfig = new Bundle();
             profileConfig.PutString("PROFILE_NAME", EXTRA_PROFILE_NAME);
             profileConfig.PutString("PROFILE_ENABLED", _bRegistered ? "true" : "false"); //  Seems these are all strings
             profileConfig.PutString("CONFIG_MODE", "UPDATE");
+
             Bundle barcodeConfig = new Bundle();
             barcodeConfig.PutString("PLUGIN_NAME", "BARCODE");
             barcodeConfig.PutString("RESET_CONFIG", "false"); //  This is the default but never hurts to specify
+
             Bundle barcodeProps = new Bundle();
             barcodeProps.PutString("scanner_input_enabled", "true");
             barcodeProps.PutString("scanner_selection", "auto"); //  Could also specify a number here, the id returned from ENUMERATE_SCANNERS.
                                                                  //  Do NOT use "Auto" here (with a capital 'A'), it must be lower case.
+
+            ZebraScannerConfig config = (ZebraScannerConfig)a_config;
+
             barcodeProps.PutString("decoder_ean8", config.IsEAN8 ? "true" : "false");
             barcodeProps.PutString("decoder_ean13", config.IsEAN13 ? "true" : "false");
             barcodeProps.PutString("decoder_code39", config.IsCode39 ? "true" : "false");
@@ -98,12 +100,13 @@ namespace Inventory.Droid
 
             barcodeConfig.PutBundle("PARAM_LIST", barcodeProps);
             profileConfig.PutBundle("PLUGIN_CONFIG", barcodeConfig);
+
             Bundle appConfig = new Bundle();
             appConfig.PutString("PACKAGE_NAME", Android.App.Application.Context.PackageName);      //  Associate the profile with this app
             appConfig.PutStringArray("ACTIVITY_LIST", new String[] { "*" });
+
             profileConfig.PutParcelableArray("APP_LIST", new Bundle[] { appConfig });
             SendDataWedgeIntentWithExtra(ACTION_DATAWEDGE_FROM_6_2, EXTRA_SET_CONFIG, profileConfig);
-
         }
 
         private void EnableProfile()

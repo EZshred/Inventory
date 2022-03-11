@@ -192,9 +192,7 @@ namespace Inventory
                 item = getItemTask.Result.First<Item>();
             }
 
-
             CoreMethods.PushPageModel<ItemPageModel>(item);
-
         }
 
         private void ScannedStatusChanged(object sender, string a_message)

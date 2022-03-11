@@ -1,6 +1,10 @@
-﻿using System;
+﻿using FreshMvvm;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
-using FreshMvvm;
 using Xamarin.Forms;
 
 namespace Inventory
@@ -63,7 +67,8 @@ namespace Inventory
         {
             get
             {
-                return new Command(async () => {
+                return new Command(async () =>
+                {
                     if (_item.IsValid())
                     {
                         await _repository.CreateItem(_item);
@@ -71,6 +76,43 @@ namespace Inventory
                     }
                 });
             }
+        }
+
+        protected override void ViewIsAppearing(object sender, EventArgs e)
+        {
+            base.ViewIsAppearing(sender, e);
+            var scanner = FreshIOC.Container.Resolve<IScanner>();
+
+            scanner.Enable();
+            scanner.OnScanDataCollected += ScannedDataCollected;
+
+            var config = new ZebraScannerConfig();
+            config.IsUPCE0 = false;
+            config.IsUPCE1 = false;
+
+            scanner.SetConfig(config);
+        }
+
+        protected override void ViewIsDisappearing(object sender, EventArgs e)
+        {
+            var scanner = FreshIOC.Container.Resolve<IScanner>();
+
+            if (null != scanner)
+            {
+                scanner.Disable();
+                scanner.OnScanDataCollected -= ScannedDataCollected;
+            }
+            base.ViewIsDisappearing(sender, e);
+        }
+
+
+        private void ScannedDataCollected(object sender, StatusEventArgs a_status)
+        {
+            Barcode barcode = new Barcode();
+            barcode.Data = a_status.Data;
+            barcode.Type = a_status.BarcodeType;
+
+            ItemBarcode = barcode.Data;
         }
     }
 }
